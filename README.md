@@ -144,7 +144,7 @@ Se sigue la convención **Conventional Commits**:
 
 ## Video de sustentación
 
-📺 Video (YouTube, no listado): **[pendiente — agregar enlace aquí una vez publicado]**
+📺 Video (YouTube, no listado): **https://youtu.be/pUdx2tp3b0o**
 
 ## Autor
 
