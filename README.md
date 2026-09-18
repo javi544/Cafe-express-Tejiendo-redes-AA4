@@ -1,6 +1,8 @@
 # ☕ Café Express Distribuido — Arquitectura de Microservicios
 
-Prototipo funcional desarrollado como parte de la **Actividad 4** (arquitectura distribuida). Evoluciona el sistema monolítico de la Actividad 2 hacia una arquitectura de **seis microservicios independientes**, coordinados mediante los patrones **Proxy**, **Mediator** y **Observer**, con concurrencia real basada en `ThreadPoolExecutor`. Incluye un frontend web servido por el Gateway (`http://localhost:8000/`) para crear pedidos y ver en vivo cómo avanzan por el sistema.
+Prototipo funcional desarrollado como parte del mini proyecto de la Unidad 2, *"Tejiendo redes: arquitectura de software entre hilos y nodos"*. Evoluciona el sistema monolítico de la Actividad 2 hacia una arquitectura de **seis microservicios independientes**, coordinados mediante los patrones **Proxy**, **Mediator** y **Observer**, con concurrencia real basada en `ThreadPoolExecutor`. Incluye un frontend web servido por el Gateway (`http://localhost:8000/`) para crear pedidos y ver en vivo cómo avanzan por el sistema.
+
+> El informe técnico completo (PDF, con diagramas UML, justificación de patrones y resultados de pruebas de carga) y la presentación en video se entregan por separado en el LMS. Este repositorio contiene únicamente el código fuente del prototipo.
 
 ## Arquitectura
 
@@ -20,12 +22,10 @@ Cliente → Gateway (Proxy) → Orders ──eventos──▶ Mediator ──▶
 
 Orders **nunca** conoce a Kitchen, Dispatch ni Notifications: solo publica eventos al Mediator, que decide a quién reenviarlos. Esto permite agregar nuevos servicios reactivos sin tocar el resto del sistema.
 
-Ver el informe completo en `docs/informe/Cafe_Express_Distribuido_Informe.pdf` (formato de entrega) para el detalle de requisitos, arquitectura, patrones y resultados de las pruebas de carga. El `.docx` se conserva como fuente editable.
-
 ## Estructura del proyecto
 
 ```
-cafe-distribuido/
+cafe-express-distribuido/
 ├── gateway/            # Proxy — único servicio con puerto público
 │   └── frontend/         # Interfaz web (HTML/CSS/JS) servida como estáticos por el Gateway
 ├── orders/             # Fuente de verdad del pedido (SQLite)
@@ -34,9 +34,6 @@ cafe-distribuido/
 ├── dispatch/            # Despacho (ThreadPoolExecutor)
 ├── notifications/       # Observer — notificaciones al cliente
 ├── diagramas/            # UML: componentes, secuencia, despliegue (.puml + .png)
-├── docs/
-│   ├── informe/           # Informe académico (.pdf de entrega + .docx editable)
-│   └── evidencias/        # Capturas y resultados reales de las pruebas de carga
 ├── tests/
 │   └── load_test.py       # Script de prueba de carga (10/25/50/100 pedidos concurrentes)
 ├── docker-compose.yml
@@ -55,7 +52,7 @@ Cada cambio de estado lo reporta el servicio correspondiente (Kitchen o Dispatch
 
 ## Instalación y ejecución
 
-### Opción A — Docker Compose 
+### Opción A — Docker Compose (recomendada)
 
 ```bash
 docker compose up --build
@@ -69,7 +66,7 @@ Solo el Gateway publica un puerto al host. Todo el sistema se usa a través de �
 - Listar pedidos: `GET http://localhost:8000/pedidos`
 - Documentación interactiva: `http://localhost:8000/docs`
 
-> **Nota:** el Gateway sirve el frontend como archivos estáticos empaquetados dentro de su propia imagen (`gateway/frontend/`). Si ya habías construido las imágenes de Docker antes de esta actualización, es necesario reconstruirlas con `docker compose up --build` (no basta con `docker compose up`) para que el contenedor incluya los archivos del frontend.
+> **Nota:** el Gateway sirve el frontend como archivos estáticos empaquetados dentro de su propia imagen (`gateway/frontend/`). Si ya habías construido las imágenes de Docker antes, es necesario reconstruirlas con `docker compose up --build` (no basta con `docker compose up`) para que el contenedor incluya los archivos del frontend.
 
 ### Opción B — Local (Python, un servicio por proceso)
 
@@ -123,7 +120,7 @@ Dispara N pedidos concurrentes contra el Gateway y mide, para cada nivel: latenc
 | 50 | 50 / 0 | 13.27 | 3.77 | 636 |
 | 100 | 100 / 0 | 23.69 | 4.22 | 808 |
 
-**0% de pedidos fallidos en los cuatro niveles.** Al aumentar `MAX_WORKERS` de 5 a 20 en Kitchen y Dispatch (sin cambiar código), el throughput a 100 pedidos concurrentes pasó de **4.22 a 10.45 pedidos/segundo** (≈2.5×), confirmando que el sistema escala horizontalmente por configuración. Detalle completo, gráficas y análisis en `docs/informe/Cafe_Express_Distribuido_Informe.pdf` (sección 9) y en `docs/evidencias/`.
+**0% de pedidos fallidos en los cuatro niveles.** Al aumentar `MAX_WORKERS` de 5 a 20 en Kitchen y Dispatch (sin cambiar código), el throughput a 100 pedidos concurrentes pasó de **4.22 a 10.45 pedidos/segundo** (≈2.5×), confirmando que el sistema escala horizontalmente por configuración. Detalle completo, gráficas y análisis en el informe técnico (PDF) entregado en el LMS.
 
 ## Diagramas UML
 
@@ -145,14 +142,9 @@ Se sigue la convención **Conventional Commits**:
 | `refactor:` | Cambios internos sin alterar comportamiento |
 | `chore:` | Mantenimiento (configuración, dependencias) |
 
-## Evidencias
-
-Ver `docs/evidencias/` para capturas reales del sistema en funcionamiento: bitácora del Mediator, notificaciones generadas por Notifications, el historial completo de un pedido entregado, y las gráficas de throughput/latencia y escalabilidad.
-
 ## Video de sustentación
 
-
-📺 Video (YouTube, no listado): https://youtu.be/pUdx2tp3b0o
+📺 Video (YouTube, no listado): **[pendiente — agregar enlace aquí una vez publicado]**
 
 ## Autor
 
