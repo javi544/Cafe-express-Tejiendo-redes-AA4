@@ -1,0 +1,58 @@
+services:
+  gateway:
+    build: ./gateway
+    ports:
+      - "8000:8000"          # único puerto publicado al host
+    environment:
+      - ORDERS_URL=http://orders:8001
+    depends_on:
+      - orders
+    networks: [cafe-net]
+
+  orders:
+    build: ./orders
+    environment:
+      - MEDIATOR_URL=http://mediator:8002
+      - DATABASE_URL=sqlite:///./pedidos.db
+    volumes:
+      - orders-data:/app
+    depends_on:
+      - mediator
+    networks: [cafe-net]
+
+  mediator:
+    build: ./mediator
+    environment:
+      - KITCHEN_URL=http://kitchen:8003
+      - DISPATCH_URL=http://dispatch:8004
+      - NOTIFICATIONS_URL=http://notifications:8005
+    depends_on:
+      - kitchen
+      - dispatch
+      - notifications
+    networks: [cafe-net]
+
+  kitchen:
+    build: ./kitchen
+    environment:
+      - ORDERS_URL=http://orders:8001
+      - MAX_WORKERS=5
+    networks: [cafe-net]
+
+  dispatch:
+    build: ./dispatch
+    environment:
+      - ORDERS_URL=http://orders:8001
+      - MAX_WORKERS=5
+    networks: [cafe-net]
+
+  notifications:
+    build: ./notifications
+    networks: [cafe-net]
+
+networks:
+  cafe-net:
+    driver: bridge
+
+volumes:
+  orders-data:

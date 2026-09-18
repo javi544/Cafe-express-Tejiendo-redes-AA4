@@ -1,0 +1,58 @@
+@startuml despliegue
+skinparam backgroundColor white
+skinparam node {
+  BackgroundColor #EAF4F6
+  BorderColor #065A82
+  FontColor #14323E
+}
+skinparam database {
+  BackgroundColor #EAF4F6
+  BorderColor #065A82
+}
+skinparam artifact {
+  BackgroundColor white
+  BorderColor #065A82
+}
+
+node "Dispositivo del Cliente" as CLI {
+  artifact "Navegador / curl / Postman" as C
+}
+
+node "Docker Host" as HOST {
+  node "contenedor: gateway\n:8000" as NGW {
+    artifact "Gateway (FastAPI)" as AGW
+  }
+  node "contenedor: orders\n:8001" as NORD {
+    artifact "Orders (FastAPI)" as AORD
+    database "SQLite" as DB
+  }
+  node "contenedor: mediator\n:8002" as NMED {
+    artifact "Mediator (FastAPI)" as AMED
+  }
+  node "contenedor: kitchen\n:8003" as NKIT {
+    artifact "Kitchen (FastAPI +\nThreadPoolExecutor)" as AKIT
+  }
+  node "contenedor: dispatch\n:8004" as NDES {
+    artifact "Dispatch (FastAPI +\nThreadPoolExecutor)" as ADES
+  }
+  node "contenedor: notifications\n:8005" as NNOT {
+    artifact "Notifications (FastAPI)" as ANOT
+  }
+}
+
+CLI -down-> NGW : HTTPS\n(único puerto publicado: 8000)
+NGW -down-> NORD : red interna Docker
+NORD -down-> NMED : red interna Docker
+NMED -down-> NKIT : red interna Docker
+NMED -down-> NDES : red interna Docker
+NMED -down-> NNOT : red interna Docker
+NKIT -up-> NORD
+NDES -up-> NORD
+
+note bottom of HOST
+  Todos los servicios se comunican por
+  una red Docker interna (docker-compose).
+  Solo el Gateway expone puerto al host.
+end note
+
+@enduml

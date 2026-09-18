@@ -1,0 +1,55 @@
+@startuml componentes
+skinparam backgroundColor white
+skinparam componentStyle rectangle
+skinparam component {
+  BackgroundColor #EAF4F6
+  BorderColor #065A82
+  FontColor #14323E
+  ArrowColor #065A82
+}
+skinparam database {
+  BackgroundColor #EAF4F6
+  BorderColor #065A82
+}
+skinparam actorStyle awesome
+
+actor "Cliente" as Cliente
+
+package "Café Express Distribuido" {
+  [API Gateway\n<<Proxy>>] as GW
+  [Servicio Pedidos\n(Orders)] as ORD
+  [Mediator\n<<Mediator>>] as MED
+  [Servicio Cocina\n(Kitchen)] as KIT
+  [Servicio Despacho\n(Dispatch)] as DES
+  [Servicio Notificaciones\n<<Observer>>] as NOT
+  database "SQLite\npedidos.db" as DB
+}
+
+Cliente --> GW : HTTP/JSON
+GW --> ORD : HTTP/JSON\n(proxy)
+ORD --> DB : lee/escribe
+ORD --> MED : POST /eventos
+MED --> KIT : POST /procesar\n(pedido_creado)
+MED --> DES : POST /procesar\n(pedido_listo)
+MED --> NOT : POST /notificar\n(todos los eventos)
+KIT --> ORD : PATCH /pedidos/{id}/estado
+DES --> ORD : PATCH /pedidos/{id}/estado
+
+note bottom of GW
+  Controla el acceso al sistema;
+  el cliente nunca llama a Orders
+  directamente.
+end note
+
+note bottom of MED
+  Único servicio que conoce a
+  Kitchen, Dispatch y Notifications.
+  Orders no los conoce.
+end note
+
+note right of NOT
+  Se suscribe a TODOS los
+  tipos de evento (Observer).
+end note
+
+@enduml

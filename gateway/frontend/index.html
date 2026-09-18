@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Café Express Distribuido</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-icon">☕</span>
+      <div>
+        <h1>Café Express Distribuido</h1>
+        <p>Arquitectura de microservicios en vivo — Actividad 4</p>
+      </div>
+    </div>
+    <div class="status" id="statusPill">
+      <span class="dot" id="statusDot"></span>
+      <span id="statusText">Conectando…</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel panel-order">
+      <h2>Nuevo pedido</h2>
+      <p class="hint">Este formulario le habla únicamente al <strong>Gateway</strong> (puerto 8000), que lo reenvía a Orders. De ahí en adelante, todo lo que ves a la derecha ocurre solo: Mediator, Kitchen, Dispatch y Notifications.</p>
+
+      <label class="field">
+        <span>Cliente</span>
+        <input type="text" id="clienteInput" placeholder="Tu nombre" value="Javier">
+      </label>
+
+      <div class="menu" id="menu"></div>
+
+      <div class="order-footer">
+        <div class="total">
+          <span>Total</span>
+          <strong id="totalDisplay">$0</strong>
+        </div>
+        <button id="confirmarBtn" class="btn-primary">Confirmar pedido</button>
+      </div>
+      <p class="error" id="orderError"></p>
+    </section>
+
+    <section class="panel panel-live">
+      <div class="panel-live-header">
+        <h2>Pedidos en vivo</h2>
+        <span class="hint-small">se actualiza cada 1.2s</span>
+      </div>
+      <div class="steps-legend">
+        <span>CREADO</span><span>→</span><span>EN_PREPARACION</span><span>→</span>
+        <span>LISTO</span><span>→</span><span>EN_DESPACHO</span><span>→</span><span>ENTREGADO</span>
+      </div>
+      <div id="pedidosList" class="pedidos-list">
+        <p class="empty-state">Todavía no hay pedidos. Crea el primero a la izquierda.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer class="foot">
+    Gateway «Proxy» → Orders → Mediator «Mediator» → Kitchen / Dispatch (ThreadPoolExecutor) → Notifications «Observer»
+  </footer>
+
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+@startuml secuencia
+skinparam backgroundColor white
+skinparam sequence {
+  ActorBackgroundColor #EAF4F6
+  ParticipantBackgroundColor #EAF4F6
+  ParticipantBorderColor #065A82
+  ArrowColor #065A82
+  LifeLineBorderColor #065A82
+  FontColor #14323E
+}
+title Diagrama de Secuencia — Ciclo de vida distribuido de un pedido
+
+actor Cliente
+participant "Gateway\n<<Proxy>>" as GW
+participant "Orders" as ORD
+participant "Mediator" as MED
+participant "Kitchen\n(ThreadPoolExecutor)" as KIT
+participant "Dispatch" as DES
+participant "Notifications\n<<Observer>>" as NOT
+
+Cliente -> GW : POST /pedidos
+GW -> ORD : POST /pedidos (proxy)
+ORD -> ORD : crear pedido\n(estado = CREADO)
+ORD --> GW : 201 {pedido_id}
+GW --> Cliente : 201 {pedido_id}
+
+ORD ->> MED : evento: pedido_creado
+MED ->> KIT : POST /procesar (async)
+MED ->> NOT : POST /notificar
+KIT -> KIT : submit a hilo del pool
+KIT --> MED : 202 Accepted
+
+group en el hilo del pool (Kitchen)
+  KIT -> ORD : PATCH estado = EN_PREPARACION
+  ORD ->> MED : evento: pedido_en_preparacion
+  MED ->> NOT : POST /notificar
+  KIT -> KIT : time.sleep(simular cocción)
+  KIT -> ORD : PATCH estado = LISTO
+  ORD ->> MED : evento: pedido_listo
+  MED ->> DES : POST /procesar (async)
+  MED ->> NOT : POST /notificar
+end
+
+group en el hilo del pool (Dispatch)
+  DES -> ORD : PATCH estado = EN_DESPACHO
+  ORD ->> MED : evento: pedido_en_despacho
+  MED ->> NOT : POST /notificar
+  DES -> DES : time.sleep(simular despacho)
+  DES -> ORD : PATCH estado = ENTREGADO
+  ORD ->> MED : evento: pedido_entregado
+  MED ->> NOT : POST /notificar
+end
+
+Cliente -> GW : GET /pedidos/{id}
+GW -> ORD : GET /pedidos/{id} (proxy)
+ORD --> GW : 200 {estado: ENTREGADO, historial:[...]}
+GW --> Cliente : 200 {...}
+
+@enduml
